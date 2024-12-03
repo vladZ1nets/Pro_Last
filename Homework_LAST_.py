@@ -9,9 +9,10 @@ from database import init_db, db_session
 import models
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+import celery_tasks
 app = Flask(__name__)
 app.secret_key = 'hbiuvgtgiujhn'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db1._db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
@@ -248,6 +249,7 @@ def contracts():
         new_contract.leaser_id = leaser.id
         db_session.add(new_contract)
         db_session.commit()
+        celery_tasks.send_email(new_contract.id)
         return redirect('/contracts')
 
 
@@ -286,7 +288,11 @@ def compare():
 
         return render_template('compare.html', contract_1=contract_1, contract_2=contract_2)
 
+@app.route('/add_task', methods=['GET'])
+def set_task():
+    celery_tasks.add.delay(1,2)
+    return "Task sent"
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port=5001)
 

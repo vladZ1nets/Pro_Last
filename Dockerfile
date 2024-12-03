@@ -10,5 +10,4 @@ EXPOSE 5000
 
 #ENV NAME World
 
-CMD ["python", "Homework_LAST_.py"]
 
